@@ -17,7 +17,7 @@ const SECTION = new RegExp(/\s*\[([^\]]+)]/);
  * @type {RegExp}
  * @private
  */
-const KEY = new RegExp(/\s*(.*?)\s*[=:]\s*(.*)/);
+const KEY = new RegExp(/\s*(.*?)\s*[=:]\s*(.*)/s);
 
 /**
  * Regular expression to match comments. Either starting with a
@@ -48,7 +48,7 @@ function ConfigParser() {
  * Returns an array of the sections.
  * @returns {Array}
  */
-ConfigParser.prototype.sections = function() {
+ConfigParser.prototype.sections = function () {
     return Object.keys(this._sections);
 };
 
@@ -57,9 +57,9 @@ ConfigParser.prototype.sections = function() {
  * exists, a DuplicateSectionError is thrown.
  * @param {string} section - Section Name
  */
-ConfigParser.prototype.addSection = function(section) {
-    if(this._sections.hasOwnProperty(section)){
-        throw new errors.DuplicateSectionError(section)
+ConfigParser.prototype.addSection = function (section) {
+    if (this._sections.hasOwnProperty(section)) {
+        throw new errors.DuplicateSectionError(section);
     }
     this._sections[section] = {};
 };
@@ -70,7 +70,7 @@ ConfigParser.prototype.addSection = function(section) {
  * @param {string} section - Section Name
  * @returns {boolean}
  */
-ConfigParser.prototype.hasSection = function(section) {
+ConfigParser.prototype.hasSection = function (section) {
     return this._sections.hasOwnProperty(section);
 };
 
@@ -79,10 +79,10 @@ ConfigParser.prototype.hasSection = function(section) {
  * @param {string} section - Section Name
  * @returns {Array}
  */
-ConfigParser.prototype.keys = function(section) {
+ConfigParser.prototype.keys = function (section) {
     try {
         return Object.keys(this._sections[section]);
-    } catch(err){
+    } catch (err) {
         throw new errors.NoSectionError(section);
     }
 };
@@ -94,18 +94,15 @@ ConfigParser.prototype.keys = function(section) {
  * @returns {boolean}
  */
 ConfigParser.prototype.hasKey = function (section, key) {
-    return this._sections.hasOwnProperty(section) &&
-        this._sections[section].hasOwnProperty(key);
+    return this._sections.hasOwnProperty(section) && this._sections[section].hasOwnProperty(key);
 };
 
 /**
  * Reads a file and parses the configuration data.
  * @param {string|Buffer|int} file - Filename or File Descriptor
  */
-ConfigParser.prototype.read = function(file) {
-    const lines = fs.readFileSync(file)
-        .toString('utf8')
-        .split(LINE_BOUNDARY);
+ConfigParser.prototype.read = function (file) {
+    const lines = fs.readFileSync(file).toString('utf8').split(LINE_BOUNDARY);
     parseLines.call(this, lines);
 };
 
@@ -113,12 +110,10 @@ ConfigParser.prototype.read = function(file) {
  * Reads a file asynchronously and parses the configuration data.
  * @param {string|Buffer|int} file - Filename or File Descriptor
  */
-ConfigParser.prototype.readAsync = async function(file) {
-    const lines = (await readFileAsync(file))
-        .toString('utf8')
-        .split(LINE_BOUNDARY);
+ConfigParser.prototype.readAsync = async function (file) {
+    const lines = (await readFileAsync(file)).toString('utf8').split(LINE_BOUNDARY);
     parseLines.call(this, lines);
-}
+};
 
 /**
  * Gets the value for the key in the named section.
@@ -127,9 +122,9 @@ ConfigParser.prototype.readAsync = async function(file) {
  * @param {boolean} [raw=false] - Whether or not to replace placeholders
  * @returns {string|undefined}
  */
-ConfigParser.prototype.get = function(section, key, raw) {
-    if(this._sections.hasOwnProperty(section)){
-        if(raw){
+ConfigParser.prototype.get = function (section, key, raw) {
+    if (this._sections.hasOwnProperty(section)) {
+        if (raw) {
             return this._sections[section][key];
         } else {
             return interpolation.interpolate(this, section, key);
@@ -145,9 +140,9 @@ ConfigParser.prototype.get = function(section, key, raw) {
  * @param {int} [radix=10] - An integer between 2 and 36 that represents the base of the string.
  * @returns {number|undefined|NaN}
  */
-ConfigParser.prototype.getInt = function(section, key, radix) {
-    if(this._sections.hasOwnProperty(section)){
-        if(!radix) radix = 10;
+ConfigParser.prototype.getInt = function (section, key, radix) {
+    if (this._sections.hasOwnProperty(section)) {
+        if (!radix) radix = 10;
         return parseInt(this._sections[section][key], radix);
     }
     return undefined;
@@ -159,8 +154,8 @@ ConfigParser.prototype.getInt = function(section, key, radix) {
  * @param {string} key - Key Name
  * @returns {number|undefined|NaN}
  */
-ConfigParser.prototype.getFloat = function(section, key) {
-    if(this._sections.hasOwnProperty(section)){
+ConfigParser.prototype.getFloat = function (section, key) {
+    if (this._sections.hasOwnProperty(section)) {
         return parseFloat(this._sections[section][key]);
     }
     return undefined;
@@ -171,7 +166,7 @@ ConfigParser.prototype.getFloat = function(section, key) {
  * @param {string} section - Section Name
  * @returns {Object}
  */
-ConfigParser.prototype.items = function(section) {
+ConfigParser.prototype.items = function (section) {
     return this._sections[section];
 };
 
@@ -181,8 +176,8 @@ ConfigParser.prototype.items = function(section) {
  * @param {string} key - Key Name
  * @param {*} value - New Key Value
  */
-ConfigParser.prototype.set = function(section, key, value) {
-    if(this._sections.hasOwnProperty(section)){
+ConfigParser.prototype.set = function (section, key, value) {
+    if (this._sections.hasOwnProperty(section)) {
         this._sections[section][key] = value;
     }
 };
@@ -193,10 +188,9 @@ ConfigParser.prototype.set = function(section, key, value) {
  * @param {string} key - Key Name
  * @returns {boolean}
  */
-ConfigParser.prototype.removeKey = function(section, key) {
+ConfigParser.prototype.removeKey = function (section, key) {
     // delete operator returns true if the property doesn't not exist
-    if(this._sections.hasOwnProperty(section) &&
-        this._sections[section].hasOwnProperty(key)){
+    if (this._sections.hasOwnProperty(section) && this._sections[section].hasOwnProperty(key)) {
         return delete this._sections[section][key];
     }
     return false;
@@ -207,8 +201,8 @@ ConfigParser.prototype.removeKey = function(section, key) {
  * @param {string} section - Section Name
  * @returns {boolean}
  */
-ConfigParser.prototype.removeSection = function(section) {
-    if(this._sections.hasOwnProperty(section)){
+ConfigParser.prototype.removeSection = function (section) {
+    if (this._sections.hasOwnProperty(section)) {
         return delete this._sections[section];
     }
     return false;
@@ -220,7 +214,7 @@ ConfigParser.prototype.removeSection = function(section) {
  * @param {string|Buffer|int} file - Filename or File Descriptor
  * @param {bool} [createMissingDirs=false] - Whether to create the directories in the path if they don't exist
  */
-ConfigParser.prototype.write = function(file, createMissingDirs = false) {
+ConfigParser.prototype.write = function (file, createMissingDirs = false) {
     if (createMissingDirs) {
         const dir = path.dirname(file);
         mkdirp.sync(dir);
@@ -236,50 +230,62 @@ ConfigParser.prototype.write = function(file, createMissingDirs = false) {
  * @param {bool} [createMissingDirs=false] - Whether to create the directories in the path if they don't exist
  * @returns {Promise}
  */
-ConfigParser.prototype.writeAsync = async function(file, createMissingDirs = false) {
+ConfigParser.prototype.writeAsync = async function (file, createMissingDirs = false) {
     if (createMissingDirs) {
         const dir = path.dirname(file);
         await mkdirAsync(dir);
     }
 
     await writeFileAsync(file, getSectionsAsString.call(this));
-}
+};
 
 function parseLines(lines) {
     let curSec = null;
-    lines.forEach((line, lineNumber) => {
-        if(!line || line.match(COMMENT)) return;
-        let res = SECTION.exec(line);
-        if(res){
-            const header = res[1];
-            curSec = {};
-            this._sections[header] = curSec;
-        } else if(!curSec) {
-            throw new errors.MissingSectionHeaderError(file, lineNumber, line);
-        } else {
-            res = KEY.exec(line);
-            if(res){
-                const key = res[1];
-                curSec[key] = res[2];
+    let previouslIndent = 0;
+    let previousEntry = null;
+    let entry = null;
+    lines.push('');
+    lines.forEach((line, lineNumber, array) => {
+        if ((!line || line.match(COMMENT)) && lineNumber != array.length - 1) return;
+        let indent = line.search(/\S/);
+        entry = line;
+        if (previouslIndent <= indent && indent != 0) {
+            entry = previousEntry + '\n' + entry.slice(indent);
+            previouslIndent = indent;
+        } else if (previousEntry) {
+            let res = SECTION.exec(previousEntry);
+            if (res) {
+                const header = res[1];
+                curSec = {};
+                this._sections[header] = curSec;
+            } else if (!curSec) {
+                throw new errors.MissingSectionHeaderError(file, lineNumber, previousEntry);
             } else {
-                throw new errors.ParseError(file, lineNumber, line);
+                res = KEY.exec(previousEntry);
+                if (res) {
+                    const key = res[1];
+                    curSec[key] = res[2];
+                } else {
+                    throw new errors.ParseError(file, lineNumber, previousEntry);
+                }
             }
         }
+        previousEntry = entry;
     });
 }
 
 function getSectionsAsString() {
     let out = '';
     let section;
-    for(section in this._sections){
-        if(!this._sections.hasOwnProperty(section)) continue;
-        out += ('[' + section + ']\n');
+    for (section in this._sections) {
+        if (!this._sections.hasOwnProperty(section)) continue;
+        out += '[' + section + ']\n';
         const keys = this._sections[section];
         let key;
-        for(key in keys){
-            if(!keys.hasOwnProperty(key)) continue;
+        for (key in keys) {
+            if (!keys.hasOwnProperty(key)) continue;
             let value = keys[key];
-            out += (key + '=' + value + '\n');
+            out += key + '=' + value + '\n';
         }
         out += '\n';
     }
