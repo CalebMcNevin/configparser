@@ -246,7 +246,6 @@ function parseLines(lines) {
     let entry = null;
     lines.push('');
     lines.forEach((line, lineNumber, array) => {
-        console.log(lineNumber, line);
         if ((!line || line.match(COMMENT)) && lineNumber != array.length - 1) return;
         let indent = Math.max(line.search(/\S/), 0);
         entry = line;
