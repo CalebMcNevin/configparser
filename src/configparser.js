@@ -241,15 +241,16 @@ ConfigParser.prototype.writeAsync = async function (file, createMissingDirs = fa
 
 function parseLines(lines) {
     let curSec = null;
-    let previouslIndent = 0;
+    // let previousIndent = 0;
     let previousEntry = null;
     let entry = null;
     lines.push('');
     lines.forEach((line, lineNumber, array) => {
+        console.log(lineNumber, line);
         if ((!line || line.match(COMMENT)) && lineNumber != array.length - 1) return;
-        let indent = line.search(/\S/);
+        let indent = Math.max(line.search(/\S/), 0);
         entry = line;
-        if (previouslIndent <= indent && indent != 0) {
+        if (indent != 0) {
             entry = previousEntry + '\n' + entry.slice(indent);
         } else if (previousEntry) {
             let res = SECTION.exec(previousEntry);
@@ -270,7 +271,7 @@ function parseLines(lines) {
             }
         }
         previousEntry = entry;
-        previouslIndent = indent;
+        // previousIndent = indent;
     });
 }
 
